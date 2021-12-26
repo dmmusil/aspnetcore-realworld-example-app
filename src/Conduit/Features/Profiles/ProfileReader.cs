@@ -42,6 +42,11 @@ namespace Conduit.Features.Profiles
                     .Include(x => x.Followers)
                     .FirstOrDefaultAsync(x => x.Username == currentUserName, cancellationToken);
 
+                if (currentPerson == null)
+                {
+                    throw new RestException(HttpStatusCode.NotFound, new { Person = Constants.NOT_FOUND });
+                }
+
                 if (currentPerson.Followers.Any(x => x.TargetId == person.PersonId))
                 {
                     profile.IsFollowed = true;

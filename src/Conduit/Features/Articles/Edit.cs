@@ -88,7 +88,7 @@ namespace Conduit.Features.Articles
 
                 return new ArticleEnvelope(await _context.Articles.GetAllData()
                     .Where(x => x.Slug == article.Slug)
-                    .FirstOrDefaultAsync(cancellationToken));
+                    .FirstAsync(cancellationToken));
             }
 
             /// <summary>

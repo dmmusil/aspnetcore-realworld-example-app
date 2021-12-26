@@ -35,16 +35,24 @@ namespace Conduit.Features.Favorites
 
             public async Task<ArticleEnvelope> Handle(Command message, CancellationToken cancellationToken)
             {
-                var article = await _context.Articles.FirstOrDefaultAsync(x => x.Slug == message.Slug, cancellationToken);
+                var article =
+                    await _context.Articles.FirstOrDefaultAsync(x => x.Slug == message.Slug, cancellationToken);
 
                 if (article == null)
                 {
-                    throw new RestException(HttpStatusCode.NotFound, new { Article = Constants.NOT_FOUND });
+                    throw new RestException(HttpStatusCode.NotFound, new {Article = Constants.NOT_FOUND});
                 }
 
-                var person = await _context.Persons.FirstOrDefaultAsync(x => x.Username == _currentUserAccessor.GetCurrentUsername(), cancellationToken);
+                var person =
+                    await _context.Persons.FirstOrDefaultAsync(
+                        x => x.Username == _currentUserAccessor.GetCurrentUsername(), cancellationToken);
+                if (person == null)
+                {
+                    throw new RestException(HttpStatusCode.NotFound, new {Person = Constants.NOT_FOUND});
+                }
 
-                var favorite = await _context.ArticleFavorites.FirstOrDefaultAsync(x => x.ArticleId == article.ArticleId && x.PersonId == person.PersonId, cancellationToken);
+                var favorite = await _context.ArticleFavorites.FirstOrDefaultAsync(
+                    x => x.ArticleId == article.ArticleId && x.PersonId == person.PersonId, cancellationToken);
 
                 if (favorite != null)
                 {
@@ -53,7 +61,7 @@ namespace Conduit.Features.Favorites
                 }
 
                 return new ArticleEnvelope(await _context.Articles.GetAllData()
-                    .FirstOrDefaultAsync(x => x.ArticleId == article.ArticleId, cancellationToken));
+                    .FirstAsync(x => x.ArticleId == article.ArticleId, cancellationToken));
             }
         }
     }

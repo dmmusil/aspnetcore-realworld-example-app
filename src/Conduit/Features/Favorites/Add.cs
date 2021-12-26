@@ -44,6 +44,10 @@ namespace Conduit.Features.Favorites
                 }
 
                 var person = await _context.Persons.FirstOrDefaultAsync(x => x.Username == _currentUserAccessor.GetCurrentUsername(), cancellationToken);
+                if (person == null)
+                {
+                    throw new RestException(HttpStatusCode.NotFound, new { Person = Constants.NOT_FOUND });
+                }
 
                 var favorite = await _context.ArticleFavorites.FirstOrDefaultAsync(x => x.ArticleId == article.ArticleId && x.PersonId == person.PersonId, cancellationToken);
 
@@ -61,7 +65,7 @@ namespace Conduit.Features.Favorites
                 }
 
                 return new ArticleEnvelope(await _context.Articles.GetAllData()
-                    .FirstOrDefaultAsync(x => x.ArticleId == article.ArticleId, cancellationToken));
+                    .FirstAsync(x => x.ArticleId == article.ArticleId, cancellationToken));
             }
         }
     }

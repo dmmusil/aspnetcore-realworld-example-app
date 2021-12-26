@@ -29,7 +29,8 @@ namespace Conduit.Features.Followers
             private readonly ICurrentUserAccessor _currentUserAccessor;
             private readonly IProfileReader _profileReader;
 
-            public QueryHandler(ConduitContext context, ICurrentUserAccessor currentUserAccessor, IProfileReader profileReader)
+            public QueryHandler(ConduitContext context, ICurrentUserAccessor currentUserAccessor,
+                IProfileReader profileReader)
             {
                 _context = context;
                 _currentUserAccessor = currentUserAccessor;
@@ -38,16 +39,24 @@ namespace Conduit.Features.Followers
 
             public async Task<ProfileEnvelope> Handle(Command message, CancellationToken cancellationToken)
             {
-                var target = await _context.Persons.FirstOrDefaultAsync(x => x.Username == message.Username, cancellationToken);
+                var target =
+                    await _context.Persons.FirstOrDefaultAsync(x => x.Username == message.Username, cancellationToken);
 
                 if (target == null)
                 {
-                    throw new RestException(HttpStatusCode.NotFound, new { User = Constants.NOT_FOUND });
+                    throw new RestException(HttpStatusCode.NotFound, new {User = Constants.NOT_FOUND});
                 }
 
-                var observer = await _context.Persons.FirstOrDefaultAsync(x => x.Username == _currentUserAccessor.GetCurrentUsername(), cancellationToken);
+                var observer =
+                    await _context.Persons.FirstOrDefaultAsync(
+                        x => x.Username == _currentUserAccessor.GetCurrentUsername(), cancellationToken);
+                if (observer == null)
+                {
+                    throw new RestException(HttpStatusCode.NotFound, new {Person = Constants.NOT_FOUND});
+                }
 
-                var followedPeople = await _context.FollowedPeople.FirstOrDefaultAsync(x => x.ObserverId == observer.PersonId && x.TargetId == target.PersonId, cancellationToken);
+                var followedPeople = await _context.FollowedPeople.FirstOrDefaultAsync(
+                    x => x.ObserverId == observer.PersonId && x.TargetId == target.PersonId, cancellationToken);
 
                 if (followedPeople == null)
                 {

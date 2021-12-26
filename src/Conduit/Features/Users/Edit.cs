@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Conduit.Infrastructure;
+using Conduit.Infrastructure.Errors;
 using Conduit.Infrastructure.Security;
 using FluentValidation;
 using MediatR;
@@ -55,7 +57,12 @@ namespace Conduit.Features.Users
             public async Task<UserEnvelope> Handle(Command message, CancellationToken cancellationToken)
             {
                 var currentUsername = _currentUserAccessor.GetCurrentUsername();
-                var person = await _context.Persons.Where(x => x.Username == currentUsername).FirstOrDefaultAsync(cancellationToken);
+                var person = await _context.Persons.Where(x => x.Username == currentUsername)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (person == null)
+                {
+                    throw new RestException(HttpStatusCode.NotFound, new {Person = Constants.NOT_FOUND});
+                }
 
                 person.Username = message.User.Username ?? person.Username;
                 person.Email = message.User.Email ?? person.Email;

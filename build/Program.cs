@@ -42,7 +42,7 @@ Target(Format, () =>
     Run("dotnet", "format --check");
 });
 
-Target(Build, DependsOn(Format), () => Run("dotnet", "build . -c Release"));
+Target(Build, () => Run("dotnet", "build . -c Release"));
 
 Target(Test, DependsOn(Build),
     () =>
